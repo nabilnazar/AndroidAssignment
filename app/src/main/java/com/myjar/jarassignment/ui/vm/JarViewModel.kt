@@ -14,15 +14,11 @@ import kotlinx.coroutines.launch
 class JarViewModel : ViewModel() {
 
 
-
     private var _listStringData = MutableStateFlow<List<ComputerItem>>(emptyList())
     val listStringData: StateFlow<List<ComputerItem>> get() = _listStringData
 
     private val repository: JarRepository = JarRepositoryImpl(createRetrofit())
 
-    init {
-        fetchData()
-    }
 
     fun fetchData(){
         viewModelScope.launch {
