@@ -10,17 +10,25 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
+
 class JarViewModel : ViewModel() {
 
-    private val _listStringData = MutableStateFlow<List<ComputerItem>>(emptyList())
-    val listStringData: StateFlow<List<ComputerItem>>
-        get() = _listStringData
+
+
+    private var _listStringData = MutableStateFlow<List<ComputerItem>>(emptyList())
+    val listStringData: StateFlow<List<ComputerItem>> get() = _listStringData
 
     private val repository: JarRepository = JarRepositoryImpl(createRetrofit())
 
-    fun fetchData() {
+    init {
+        fetchData()
+    }
+
+    fun fetchData(){
         viewModelScope.launch {
-            repository.fetchResults()
+            repository.fetchResults().collect { computerItems ->
+                _listStringData.value = computerItems
+            }
         }
     }
 }

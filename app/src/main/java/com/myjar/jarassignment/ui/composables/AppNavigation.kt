@@ -1,5 +1,6 @@
 package com.myjar.jarassignment.ui.composables
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -28,52 +29,44 @@ import com.myjar.jarassignment.ui.vm.JarViewModel
 
 @Composable
 fun AppNavigation(
-    modifier: Modifier = Modifier,
-    viewModel: JarViewModel,
+    items: List<ComputerItem>,
+    navController: NavHostController
 ) {
-    val navController = rememberNavController()
-    val navigate = remember { mutableStateOf<String>("") }
-
-    NavHost(modifier = modifier, navController = navController, startDestination = "item_list") {
+    NavHost(navController = navController, startDestination = "item_list") {
         composable("item_list") {
             ItemListScreen(
-                viewModel = viewModel,
-                onNavigateToDetail = { selectedItem -> navigate.value = selectedItem },
-                navigate = navigate,
-                navController = navController
+                items = items,
+                onNavigateToDetail = { itemId ->
+                    navController.navigate("item_detail/$itemId")
+                }
             )
         }
         composable("item_detail/{itemId}") { backStackEntry ->
             val itemId = backStackEntry.arguments?.getString("itemId")
             ItemDetailScreen(itemId = itemId)
+            BackHandler {
+                navController.popBackStack()
+            }
         }
     }
 }
 
 @Composable
 fun ItemListScreen(
-    viewModel: JarViewModel,
     onNavigateToDetail: (String) -> Unit,
-    navigate: MutableState<String>,
-    navController: NavHostController
-) {
-    val items = viewModel.listStringData.collectAsState()
+    items: List<ComputerItem>,
+    ) {
 
-    if (navigate.value.isNotBlank()) {
-        val currRoute = navController.currentDestination?.route.orEmpty()
-        if (!currRoute.contains("item_detail")) {
-            navController.navigate("item_detail/${navigate.value}")
-        }
-    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        items(items.value) { item ->
+        items(items.size) { item ->
             ItemCard(
-                item = item,
-                onClick = { onNavigateToDetail(item.id) }
+                item = items[item],
+                onClick = { onNavigateToDetail(items[item].id) }
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -103,3 +96,5 @@ fun ItemDetailScreen(itemId: String?) {
             .padding(16.dp)
     )
 }
+
+
